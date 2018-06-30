@@ -69,16 +69,26 @@ class Filter:
 		obs_cov = numpy.eye(sensors.shape[0]) * 100
 		self.mean = numpy.random.normal(256, 256, 2)
 		self.cov = numpy.eye(2) * 128
-		self.ukf = pykalman.UnscentedKalmanFilter(self.transition, self.observation, trans_cov, obs_cov, self.mean, self.cov)
+		# self.ukf = pykalman.UnscentedKalmanFilter(self.transition, self.observation, trans_cov, obs_cov, self.mean, self.cov)
+		self.ukf = pykalman.AdditiveUnscentedKalmanFilter(self.transition_, self.observation_, trans_cov, obs_cov, self.mean, self.cov)
 
-	# transition function (adding noise)
+	# transition function (adding noise) for usual UKF
 	def transition(self, state, noise):
 		return state + noise
 
-	# observation function (same as System)
+	# observation function (same as System) for usual UKF
 	def observation(self, state, noise):
 		expected = numpy.linalg.norm(self.sensors - state, axis=-1)
 		return expected + noise
+
+	# transition function for Additive UKF
+	def transition_(self, state):
+		return state
+
+	# observation function for Additive UKF
+	def observation_(self, state):
+		expected = numpy.linalg.norm(self.sensors - state, axis=-1)
+		return expected
 
 	# update state using ukf
 	def update(self, measurement):
