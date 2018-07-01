@@ -5,7 +5,7 @@ import numpy
 import pykalman
 
 
-# System to be estimated. Estimating a target position from observations taken from several range sensors.
+# System to be estimated. We estimate a target position from observations taken from several range sensors.
 # target position : p = [p.x, p.y]
 # sensor positions: s0 = [s0.x, s0.y], ..., sn = [sn.x, sn.y]
 # state space     : x = p
@@ -59,7 +59,7 @@ class System:
 		cv2.imshow('canvas', canvas)
 
 
-# Target position estimator using UKF
+# Target position estimation using UKF
 class Filter:
 	def __init__(self, sensors):
 		self.sensors = sensors
@@ -69,26 +69,30 @@ class Filter:
 		obs_cov = numpy.eye(sensors.shape[0]) * 100
 		self.mean = numpy.random.normal(256, 256, 2)
 		self.cov = numpy.eye(2) * 128
+		# In this system, we assume simple additive noises. So, AdditiveUnscentedKalmanFilter is more suitable (fast and robust).
+		# But, you can use the usual UKF which doesn't assume such additive noises as well.
 		# self.ukf = pykalman.UnscentedKalmanFilter(self.transition, self.observation, trans_cov, obs_cov, self.mean, self.cov)
 		self.ukf = pykalman.AdditiveUnscentedKalmanFilter(self.transition_, self.observation_, trans_cov, obs_cov, self.mean, self.cov)
 
-	# transition function (adding noise) for usual UKF
-	def transition(self, state, noise):
-		return state + noise
-
-	# observation function (same as System) for usual UKF
-	def observation(self, state, noise):
-		expected = numpy.linalg.norm(self.sensors - state, axis=-1)
-		return expected + noise
-
 	# transition function for Additive UKF
+	# constant position
 	def transition_(self, state):
 		return state
 
 	# observation function for Additive UKF
+	# expected range data
 	def observation_(self, state):
 		expected = numpy.linalg.norm(self.sensors - state, axis=-1)
 		return expected
+
+	# transition function for usual UKF
+	def transition(self, state, noise):
+		return state + noise
+
+	# observation function for usual UKF
+	def observation(self, state, noise):
+		expected = numpy.linalg.norm(self.sensors - state, axis=-1)
+		return expected + noise
 
 	# update state using ukf
 	def update(self, measurement):
