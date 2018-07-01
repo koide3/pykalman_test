@@ -65,10 +65,10 @@ class Filter:
 		self.sensors = sensors
 
 		# initialize ukf
-		trans_cov = numpy.eye(2) * 20
-		obs_cov = numpy.eye(sensors.shape[0]) * 100
-		self.mean = numpy.random.normal(256, 256, 2)
-		self.cov = numpy.eye(2) * 128
+		trans_cov = numpy.eye(2) * 20                 # transition noise covariance matrix
+		obs_cov = numpy.eye(sensors.shape[0]) * 100   # observation noise covariance matrix
+		self.mean = numpy.random.normal(256, 256, 2)  # initial mean
+		self.cov = numpy.eye(2) * 128                 # initial covariance
 		# In this system, we assume simple additive noises. So, AdditiveUnscentedKalmanFilter is more suitable (fast and robust).
 		# But, you can use the usual UKF which doesn't assume such additive noises as well.
 		# self.ukf = pykalman.UnscentedKalmanFilter(self.transition, self.observation, trans_cov, obs_cov, self.mean, self.cov)
